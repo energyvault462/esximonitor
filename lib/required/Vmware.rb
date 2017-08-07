@@ -743,7 +743,7 @@ class Vmware
   # @return [String] returns the param toDo
   def MaintenanceAction(toDo)
     case toDo
-      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('f4:6d:04:e1:d8:a0'); self.WakeOnLan('f4:6d:04:e1:d9:c8')
+      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8')
       when 'Power On StandAlone AutoStart'; self.StartupAutostartStandAlone
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
