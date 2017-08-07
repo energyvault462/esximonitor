@@ -116,6 +116,9 @@ class Vmware
     iniHash[:pushoverAppToken] = args.fetch(:pushoverAppToken, @ini.GetValue('pushoverAppToken'))
     iniHash[:pushoverAppToken] = iniHash.fetch(:pushoverAppToken, nil)
 
+    iniHash[:allowHostShutdown] = args.fetch(:allowHostShutdown, @ini.GetValue('allowHostShutdown'))
+    iniHash[:allowHostShutdown] = iniHash.fetch(:allowHostShutdown, false)
+
 
     iniHash[:standAlone] = args.fetch(:standAlone, @ini.GetValue('standAlone'))
     iniHash[:standAlone] = iniHash.fetch(:standAlone, 'standAlone')
@@ -496,8 +499,6 @@ class Vmware
         commandArray.push(CreateGroupCommandString(doNotSuspendList, 'power.shutdown'))
       end
       commandString = commandArray.join(";")
-
-
     end
 
    output = self.RunSshCommand(commandString)
@@ -505,6 +506,19 @@ class Vmware
       result = false
     end
     return result
+  end
+
+  def ServerShutdown()
+    if @iniHash[:allowHostShutdown]
+      result = true
+      output = self.RunSshCommand('poweroff')
+      if (output=~/Power on failed/) or (output=~/Suspend failed/)
+        result = false
+      end
+      return result
+    else
+      return false
+    end
   end
 
   # Check the Arrayed List passed into it for VM's that are flagged as can't suspend.
@@ -660,6 +674,8 @@ class Vmware
     # puts "#{txbytes} bytes sent to #{host}:#{port}."
   end
 
+
+
   # Builds a hash of all the vital statistics.
   # @param [Boolean] powerstate
   # @param [Boolean] batterylevel
@@ -749,7 +765,7 @@ class Vmware
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
       when 'Power Down NASDependents'; self.ShutdownNasDependent
       when 'Power Down StandAlones'; self.ShutdownStandAlone
-      when 'Shutdown Server'; TriggerNotification({:severity=>'debug', :action=>'Shutdown Server - Not Implemented'})
+      when 'Shutdown Server'; TriggerNotification({:severity=>'debug', :action=>'Shutdown Server'}); self.ServerShutdown
       when 'Error - Confirm NAS Off'; TriggerNotification({:severity=>'error', :action=>'Error - Confirm NAS Off'})
       when 'Do Nothing'; TriggerNotification({:severity=>'debug', :action=>'Do Nothing'})
     end
@@ -774,8 +790,6 @@ class Vmware
 
     responseHash[:ActionMessage] = VmMaintenanceDecisionTime(responseHash)
     MaintenanceAction(responseHash[:ActionMessage])
-    #puts "responseHash: #{responseHash}"
-
     responseHash
   end
 
