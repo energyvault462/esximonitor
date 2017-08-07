@@ -4,7 +4,7 @@ require "./lib/required/EsxiIni.rb"
 
 
 # This is the script to run.
-esxi = Vmware.new({:iniFileName=>'./features/support/cucumberesxiTest.ini', :iniSectionName=>'esxi_settings', :writeLogs=>true, :notifyByPush=>false})
+esxi = Vmware.new({:iniFileName=>'./esxiMonitor.ini', :iniSectionName=>'esxi_settings', :writeLogs=>true, :notifyByPush=>false})
 
 begin
     while true

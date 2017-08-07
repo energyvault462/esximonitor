@@ -20,3 +20,4 @@ rubyInfo.txt
 vendor/*
 lib/*.rb
 lib/*.txt
+esxiMonitor.ini
