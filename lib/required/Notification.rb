@@ -50,6 +50,7 @@ class Notification
     iniHash[:ramDiskDir] = args.fetch(:ramDiskDir, nil)
     iniHash[:pushoverUserToken] = args.fetch(:pushoverUserToken, nil)
     iniHash[:pushoverAppToken] = args.fetch(:pushoverAppToken, nil)
+    iniHash[:verboseLogging] = args.fetch(:verboseLogging, nil)
     iniHash[:secondsBetweenLoggingAllSystemsGood] = args.fetch(:secondsBetweenLoggingAllSystemsGood, nil)
     iniHash[:initialActionMsg] = args.fetch(:initialActionMsg, nil)
 
@@ -232,13 +233,15 @@ class Notification
         pushSucess = false
       end
     end
-
-
-
-
     pushSucess
   end
 
+
+  def VerboseLog(msg={})
+    if @settingsHash[:verboseLogging]
+      @log.WriteToLog({:severity=>msg[:severity], :logMsg=>msg[:action]})
+    end
+  end
 
   def CloseLog(args={:closeMessage=>nil})
     if @settingsHash[:writeLogs]

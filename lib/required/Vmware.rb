@@ -206,23 +206,25 @@ class Vmware
 	# @return [String] Output of the command.
 	def RunSshCommand(command)
 		output = ""
-		#start_time = Time.now
+		start_time = Time.now
 		#puts "running: #{command}"
-    TriggerNotification({:severity=>'info', :action=>"SSH Command: #{command}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: RunSshCommand(#{command})"})
     Net::SSH.start( @host, @user) do|ssh|
 			output = ssh.exec!(command)
     end
 
-		#end_time = Time.now
-		#elapsed_seconds = (end_time - start_time)
+		end_time = Time.now
+		elapsed_seconds = (end_time - start_time)
 		#puts "Finished: #{command}"
 		#puts "Took: #{elapsed_seconds}"
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: RunSshCommand(#{elapsed_seconds}Secs) - Output: #{output}"})
 		return output
 	end
 
 	# Creates the master list of VMs and their current status.
 	# @return [Nil] Nothing
 	def UpdateVmList()
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: UpdateVmList"})
 		if defined? @vmListHash
 			@vmListHash = nil
 		end
@@ -251,13 +253,14 @@ class Vmware
         end
 			end
     end
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: UpdateVmList"})
   end
 
   # Updates/Creates the vmListHash's single VM Information.
   # @param [String] vmname
   # @param [String] vmId -- Not required if just updating VM
   def UpdateVmInfo(vmname, vmId = nil)
-    TriggerNotification({:severity=>'info', :action=>"Starting: UpdateVmInfo", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: UpdateVmInfo"})
     vmDetails = Hash.new
     vmGuestDetails = Hash.new
 
@@ -281,7 +284,7 @@ class Vmware
     else # add this VM into the list.
       @vmListHash[vmname] = vmDetails
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: UpdateVmInfo:  #{vmDetails}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: UpdateVmInfo:  #{vmDetails}"})
     vmDetails = nil
     vmGuestDetails = nil
   end
@@ -290,9 +293,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if autostart
   def IsAutoStart?(vmname)
-    TriggerNotification({:severity=>'info', :action=>"Starting: IsAutoStart?(#{vmname})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsAutoStart?(#{vmname})"})
 		autoStart = self.GetIniValue('autoStart')
-    TriggerNotification({:severity=>'info', :action=>"Finished: IsAutoStart?(#{vmname}): #{autoStart.include?(vmname)}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsAutoStart?(#{vmname}): #{autoStart.include?(vmname)}"})
 		return autoStart.include?(vmname)
 	end
 
@@ -300,9 +303,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if Stand Alone
 	def IsStandAlone?(vmname)
-    TriggerNotification({:severity=>'info', :action=>"Starting: IsStandAlone?(#{vmname})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsStandAlone?(#{vmname})"})
 		standAlone = self.GetIniValue('standAlone')
-    TriggerNotification({:severity=>'info', :action=>"Finished: IsStandAlone?(#{vmname}): standAlone.include?(vmname)", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsStandAlone?(#{vmname}): standAlone.include?(vmname)"})
 		return standAlone.include?(vmname)
   end
 
@@ -722,6 +725,7 @@ class Vmware
  # def BuildVitalHash(powerstate, batterylevel, upsPowerOnAtPercent, upsPowerOffAtPercent)
 #    vitalHash = Hash.new
   def BuildVitalHash()
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: BuildVitalHash"})
     vitalHash = Hash.new
     @ups.UpsMaintenance
     vitalHash[:powerstate] = @ups.GetPowerStatus
