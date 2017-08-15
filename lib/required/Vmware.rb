@@ -950,8 +950,8 @@ class Vmware
     if self.ArrayPoweredOffStandAloneAutostart.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power On StandAlone AutoStart'})
       self.VmGroupPowerOn(self.ArrayPoweredOffStandAloneAutostart)
-      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Sleeping for 30 seconds for NAS to spin up"})
-      sleep (30)
+      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Sleeping for 120 seconds for NAS to spin up"})
+      sleep (120)
       @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Finished Sleeping"})
       self.UpdateVmList
     end
