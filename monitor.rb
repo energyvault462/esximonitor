@@ -9,7 +9,7 @@ esxi = Vmware.new({:iniFileName=>'./esxiMonitor.ini', :iniSectionName=>'esxi_set
 begin
     while true
         esxi.Maintenance()
-        sleep 90
+        esxi.MaintenancePause(90)
     end
 rescue SignalException => e
   esxi.Destructor

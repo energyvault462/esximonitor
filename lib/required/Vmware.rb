@@ -837,6 +837,14 @@ class Vmware
     return toDo
   end
 
+  def MaintenancePause(pausefor)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenancePause"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"          Pausing for #{pausefor} seconds until next maint cycle"})
+    sleep(pausefor)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenancePause"})
+  end
+
+
   def Maintenance(args={:test=>false})
     @notify.VerboseLog({:severity=>'debug', :action=>'Starting: Maintenace Method'})
     self.UpdateVmList
