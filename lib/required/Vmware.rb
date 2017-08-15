@@ -686,6 +686,7 @@ class Vmware
 #    vitalHash = Hash.new
   def BuildVitalHash()
     vitalHash = Hash.new
+    @ups.UpsMaintenance
     vitalHash[:powerstate] = @ups.GetPowerStatus
     vitalHash[:batterylevel] = @ups.GetBatteryStatus
     vitalHash[:upsPowerOnAtPercent] = @ini.GetValue('upsPowerOnAtPercent')
