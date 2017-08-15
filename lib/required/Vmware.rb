@@ -1,4 +1,4 @@
-#TODO:  	def GetVmInfo is where to begin the verbose logging
+#TODO:  	Test with server off (probably will crash); maintencestop file
 require 'net/ssh'
 require 'time'
 
