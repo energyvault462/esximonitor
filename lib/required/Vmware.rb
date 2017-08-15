@@ -61,7 +61,6 @@ class Vmware
     @ini = EsxiIni.new(args)
 
     @iniHash = InitializeIniHash(args)
-    #puts "@iniHash #{@iniHash}"
     @host = self.GetIniValue('serverIp')
     @user = self.GetIniValue('serverName') #need to change this.
     @pw = self.GetIniValue('serverPw')
@@ -223,11 +222,12 @@ class Vmware
 	# Creates the master list of VMs and their current status.
 	# @return [Nil] Nothing
 	def UpdateVmList()
-    TriggerNotification({:severity=>'info', :action=>"Updating VM List", :verbose=>true})
 		if defined? @vmListHash
 			@vmListHash = nil
 		end
 		@vmListHash = Hash.new
+
+    TriggerNotification({:severity=>'info', :action=>"Starting: UpdateVmList", :verbose=>true})
 
 		output = self.RunSshCommand('vim-cmd vmsvc/getallvms')
 
@@ -256,7 +256,7 @@ class Vmware
   # @param [String] vmname
   # @param [String] vmId -- Not required if just updating VM
   def UpdateVmInfo(vmname, vmId = nil)
-    TriggerNotification({:severity=>'info', :action=>"Upadting VM Info", :verbose=>true})
+    TriggerNotification({:severity=>'info', :action=>"Starting: UpdateVmInfo", :verbose=>true})
     vmDetails = Hash.new
     vmGuestDetails = Hash.new
 
@@ -280,6 +280,7 @@ class Vmware
     else # add this VM into the list.
       @vmListHash[vmname] = vmDetails
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: UpdateVmInfo:  #{vmDetails}", :verbose=>true})
     vmDetails = nil
     vmGuestDetails = nil
   end
@@ -288,7 +289,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if autostart
   def IsAutoStart?(vmname)
+    TriggerNotification({:severity=>'info', :action=>"Starting: IsAutoStart?(#{vmname})", :verbose=>true})
 		autoStart = self.GetIniValue('autoStart')
+    TriggerNotification({:severity=>'info', :action=>"Finished: IsAutoStart?(#{vmname}): #{autoStart.include?(vmname)}", :verbose=>true})
 		return autoStart.include?(vmname)
 	end
 
@@ -296,7 +299,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if Stand Alone
 	def IsStandAlone?(vmname)
+    TriggerNotification({:severity=>'info', :action=>"Starting: IsStandAlone?(#{vmname})", :verbose=>true})
 		standAlone = self.GetIniValue('standAlone')
+    TriggerNotification({:severity=>'info', :action=>"Finished: IsStandAlone?(#{vmname}): standAlone.include?(vmname)", :verbose=>true})
 		return standAlone.include?(vmname)
   end
 
@@ -304,7 +309,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if cannot be suspended.
   def IsNoSuspend?(vmname)
+    TriggerNotification({:severity=>'info', :action=>"Starting: IsNoSuspend?(#{vmname})", :verbose=>true})
     noSuspend = self.GetIniValue('noSuspend')
+    TriggerNotification({:severity=>'info', :action=>"Finished: IsNoSuspend?(#{vmname}): noSuspend.include?(vmname)", :verbose=>true})
     return noSuspend.include?(vmname)
   end
 
@@ -314,7 +321,7 @@ class Vmware
 	def GetVmGuestDetails(vmId)
 		vmHash = Hash.new
 		commandToRun = "vim-cmd vmsvc/get.guest #{vmId}"
-
+    TriggerNotification({:severity=>'info', :action=>"Starting: GetVmGuestDetails(#{vmId}): CommandToRun: #{commandToRun}", :verbose=>true})
 		output = self.RunSshCommand(commandToRun)
 		vmHash = Hash.new
 		toolsStatusReturned = /toolsStatus = \"(.*)\"/.match(output)
@@ -327,7 +334,8 @@ class Vmware
 			else
 				vmHash[:toolsStatusReturned]=false
 			end
-		end
+    end
+    TriggerNotification({:severity=>'info', :action=>"Finishded: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}", :verbose=>true})
 		return vmHash
 	end
 
@@ -336,6 +344,7 @@ class Vmware
 	# @param [String] vmName -- Machine name being requested.
 	# @return [Hash] Returns full has of the requested virtual machine.  { :id, :vmname,  :powerstate, :havetools, :ipaddress }
 	def GetVmInfo(vmName)
+    #TriggerNotification({:severity=>'info', :action=>"Starting: GetVmInfo(#{vmName})", :verbose=>true})
 		vmHash = Hash.new
 		if vmName == nil
 			vmHash = { :id=>nil, :vmname=>vmName, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
@@ -343,7 +352,6 @@ class Vmware
 		end
 
 		if vmName.strip.length > 0
-
 			if @vmListHash[vmName] == nil #name not found, set everything to nil except :vmname
 				vmHash = { :id=>nil, :vmname=>vmName, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
 			else
@@ -351,7 +359,8 @@ class Vmware
 			end
 		else # Name was not defined, set everything to nil including :vmname
 			vmHash = { :id=>nil, :vmname=>nil, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
-		end
+    end
+    #TriggerNotification({:severity=>'info', :action=>"Finished: GetVmInfo(#{vmName}):  #{vmHash}", :verbose=>true})
 		return vmHash
   end
 
