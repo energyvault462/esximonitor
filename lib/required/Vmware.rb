@@ -313,9 +313,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if cannot be suspended.
   def IsNoSuspend?(vmname)
-    TriggerNotification({:severity=>'info', :action=>"Starting: IsNoSuspend?(#{vmname})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsNoSuspend?(#{vmname})"})
     noSuspend = self.GetIniValue('noSuspend')
-    TriggerNotification({:severity=>'info', :action=>"Finished: IsNoSuspend?(#{vmname}): noSuspend.include?(vmname)", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsNoSuspend?(#{vmname}): noSuspend.include?(vmname)"})
     return noSuspend.include?(vmname)
   end
 
@@ -325,7 +325,7 @@ class Vmware
 	def GetVmGuestDetails(vmId)
 		vmHash = Hash.new
 		commandToRun = "vim-cmd vmsvc/get.guest #{vmId}"
-    TriggerNotification({:severity=>'info', :action=>"Starting: GetVmGuestDetails(#{vmId}): CommandToRun: #{commandToRun}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Starting: GetVmGuestDetails(#{vmId}): CommandToRun: #{commandToRun}"})
 		output = self.RunSshCommand(commandToRun)
 		vmHash = Hash.new
 		toolsStatusReturned = /toolsStatus = \"(.*)\"/.match(output)
@@ -339,7 +339,7 @@ class Vmware
 				vmHash[:toolsStatusReturned]=false
 			end
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'info', :action=>"Finished: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}"})
 		return vmHash
 	end
 
