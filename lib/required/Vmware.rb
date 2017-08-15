@@ -507,6 +507,7 @@ class Vmware
   # @param [Array] vmList (by VM name)
   # @return [Boolean] of success or some form of failure.
   def VmGroupPowerOff(vmList)
+    TriggerNotification({:severity=>'info', :action=>"Starting: VmGroupPowerOff(#{vmList})", :verbose=>true})
     result = true
     doNotSuspendList = CheckListForDoNotSuspend(vmList)
     if doNotSuspendList.count == 0  # If All machines can be suspended
@@ -535,18 +536,22 @@ class Vmware
     if (output=~/Power on failed/) or (output=~/Suspend failed/)
       result = false
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: VmGroupPowerOff - Result: #{result}", :verbose=>true})
     return result
   end
 
   def ServerShutdown()
+    TriggerNotification({:severity=>'info', :action=>"Starting: ServerShutdown", :verbose=>true})
     if @iniHash[:allowHostShutdown]
       result = true
       output = self.RunSshCommand('poweroff')
       if (output=~/Power on failed/) or (output=~/Suspend failed/)
         result = false
       end
+      TriggerNotification({:severity=>'info', :action=>"Finished: ServerShutdown - Result: #{result}", :verbose=>true})
       return result
     else
+      TriggerNotification({:severity=>'info', :action=>"Finished: ServerShutdown - Result: #{result}", :verbose=>true})
       return false
     end
   end
@@ -555,12 +560,14 @@ class Vmware
   # @param [Array] vmList (by VM name)
   # @return [Array] of Virtual Machine names that cannot be suspended.
   def CheckListForDoNotSuspend(vmList)
+    TriggerNotification({:severity=>'info', :action=>"Starting: CheckListForDoNotSuspend(#{vmList})", :verbose=>true})
     doNotSuspendList = []
     vmList.each do |vm|
       if @vmListHash[vm][:nosuspend]
         doNotSuspendList.push(vm)
       end
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: CheckListForDoNotSuspend - Result: doNotSuspendList", :verbose=>true})
     return doNotSuspendList
   end
 
@@ -614,7 +621,7 @@ class Vmware
 			if powerStateOfHash == powerstate and standaloneStateOfHash == standalone
 				returnArray.push(array[:vmname])
 			end
-		end
+    end
 		return returnArray
   end
 
