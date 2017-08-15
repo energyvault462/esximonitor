@@ -777,6 +777,7 @@ class Vmware
   end
 
   def Maintenance(args={:test=>false})
+    TriggerNotification({:severity=>'info', :action=>'Starting Maintenace Method', :verbose=>true})
     self.UpdateVmList
     responseHash = self.BuildVitalHash
 
@@ -829,6 +830,7 @@ class Vmware
   end
 
   def TriggerNotification(msg, testHash={})
+    verbose = msg.fetch(:verbose, false)
     responseHash = Hash.new
     vitalHash = Hash.new
     if testHash.empty?
@@ -836,8 +838,10 @@ class Vmware
     else
       vitalHash = testHash
     end
-    responseHash = @notify.IncomingNotification(msg, vitalHash)
 
+    if verbose == false || (verbose==true && self.GetIniValue('verboseLogging')==true)
+       responseHash = @notify.IncomingNotification(msg, vitalHash)
+    end
     responseHash
   end
 
