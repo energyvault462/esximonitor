@@ -1,4 +1,5 @@
-require 'net/ssh' 
+#TODO:  	def GetVmInfo is where to begin the verbose logging
+require 'net/ssh'
 require 'time'
 
 # Require EsxiIni
@@ -335,7 +336,7 @@ class Vmware
 				vmHash[:toolsStatusReturned]=false
 			end
     end
-    TriggerNotification({:severity=>'info', :action=>"Finishded: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}", :verbose=>true})
+    TriggerNotification({:severity=>'info', :action=>"Finished: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}", :verbose=>true})
 		return vmHash
 	end
 
@@ -344,7 +345,6 @@ class Vmware
 	# @param [String] vmName -- Machine name being requested.
 	# @return [Hash] Returns full has of the requested virtual machine.  { :id, :vmname,  :powerstate, :havetools, :ipaddress }
 	def GetVmInfo(vmName)
-    #TriggerNotification({:severity=>'info', :action=>"Starting: GetVmInfo(#{vmName})", :verbose=>true})
 		vmHash = Hash.new
 		if vmName == nil
 			vmHash = { :id=>nil, :vmname=>vmName, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
@@ -360,7 +360,7 @@ class Vmware
 		else # Name was not defined, set everything to nil including :vmname
 			vmHash = { :id=>nil, :vmname=>nil, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
     end
-    #TriggerNotification({:severity=>'info', :action=>"Finished: GetVmInfo(#{vmName}):  #{vmHash}", :verbose=>true})
+    #TriggerNotification({:severity=>'info', :action=>"Finished: GetVmInfo(#{vmName}) -  Result: #{vmHash}", :verbose=>true}
 		return vmHash
   end
 
@@ -368,12 +368,14 @@ class Vmware
 	# @param [Int] vmId -- Target ID
 	# @return [Boolean] True/False
 	def IsVmPoweredOn?(vmId)
+    TriggerNotification({:severity=>'info', :action=>"Starting:  IsVmPoweredOn?(#{vmId})", :verbose=>true})
 		result=false
 		commandToRun = "vim-cmd vmsvc/power.getstate #{vmId}"
 		output = self.RunSshCommand(commandToRun)
 		if (output=~/Powered on/)
 			result = true
-		end
+    end
+    TriggerNotification({:severity=>'info', :action=>"Finished:  IsVmPoweredOn?(#{vmId}) - Result: #{result}", :verbose=>true})
 		return result
 	end
 
@@ -381,6 +383,7 @@ class Vmware
   # @param [Array] vmList (by VM name)
   # @return [Boolean] of success or some form of failure.
   def VmGroupPowerOn(vmList)
+    TriggerNotification({:severity=>'info', :action=>"Starting: VmGroupPowerOn(#{vmList})", :verbose=>true})
     result=true
 
     self.TriggerNotification({:severity=>'info', :action=>'Power On (group)', :msg=>vmList})
@@ -390,18 +393,20 @@ class Vmware
     if (output=~/Power on failed/)
       result = false
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: VmGroupPowerOn(#{vmList}) - Result: #{result}", :verbose=>true})
     return result
   end
-
-
 
   # Get list of machines that are powered on, standalone and Autostart
   #     by calling ReturnVmListByStatus with correct parameters.
   #     and filtering out Manual starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnStandAloneAutostart
+    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnStandAloneAutostart", :verbose=>true})
     vmList = ReturnVmListByStatus(true, true)
-    return FilterOutByAutostart(vmList, true)
+    result = FilterOutByAutostart(vmList, true)
+    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnStandAloneAutostart - Result: #{result}", :verbose=>true})
+    return result
   end
 
   # Get list of machines that are powered on, standalone and Manual Start
@@ -409,19 +414,23 @@ class Vmware
   #     and filtering out Auto starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnStandAloneManualStart
+    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnStandAloneManualStart", :verbose=>true})
     vmList = ReturnVmListByStatus(true, true)
-    return FilterOutByAutostart(vmList, false)
+    result = FilterOutByAutostart(vmList, false)
+    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnStandAloneManualStart - Result: #{result}", :verbose=>true})
+    return result
   end
-
-
 
   # Get list of machines that are powered on, Dependent and Manual Start
   #     by calling ReturnVmListByStatus with correct parameters.
   #     and filtering out Auto starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnDependentManualStart
+    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnDependentManualStart", :verbose=>true})
     vmList = ReturnVmListByStatus(true, false)
-    return FilterOutByAutostart(vmList, false)
+    result = FilterOutByAutostart(vmList, false)
+    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnDependentManualStart - Result: #{result}", :verbose=>true})
+    return result
   end
 
 
@@ -450,23 +459,28 @@ class Vmware
 
   # Suspend/Shutdown all Stand Alone virtual Machines.
   def ShutdownStandAlone
+    TriggerNotification({:severity=>'info', :action=>"Starting: ShutdownStandAlone", :verbose=>true})
     if self.ArrayPoweredOnStandAlone.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power Down StandAlones'})
       VmGroupPowerOff(self.ArrayPoweredOnStandAlone)
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: ShutdownStandAlone", :verbose=>true})
   end
 
   # Suspend/Shutdown all powered on NAS Dependent.
   def ShutdownNasDependent
+    TriggerNotification({:severity=>'info', :action=>"Starting: ShutdownNasDependent", :verbose=>true})
     if self.ArrayPoweredOnDependent.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power Down NASDependents'})
       result = self.VmGroupPowerOff(self.ArrayPoweredOnDependent)
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: ShutdownNasDependent", :verbose=>true})
   end
 
 
   # Starts up all the NAS Dependent Autostarting Virtual Machines after making sure NAS is on.
   def StartupAutostartNasDependent
+    TriggerNotification({:severity=>'info', :action=>"Starting: StartupAutostartNasDependent", :verbose=>true})
     while !self.isNasActive?
       self.UpdateVmList
 
@@ -486,6 +500,7 @@ class Vmware
       sleep (5)
       self.UpdateVmList
     end
+    TriggerNotification({:severity=>'info', :action=>"Finished: StartupAutostartNasDependent", :verbose=>true})
   end
 
   # Power off 1 or more virtual machines. -- Suspend is preferred, will shutdown if not allowed to suspend.
