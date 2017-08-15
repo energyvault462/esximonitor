@@ -208,7 +208,7 @@ class Vmware
 		output = ""
 		start_time = Time.now
 		#puts "running: #{command}"
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: RunSshCommand(#{command})"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: RunSshCommand(#{command})"})
     Net::SSH.start( @host, @user) do|ssh|
 			output = ssh.exec!(command)
     end
@@ -217,14 +217,14 @@ class Vmware
 		elapsed_seconds = (end_time - start_time)
 		#puts "Finished: #{command}"
 		#puts "Took: #{elapsed_seconds}"
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: RunSshCommand(#{elapsed_seconds}Secs) - Output: #{output}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: RunSshCommand(#{elapsed_seconds}Secs) - Output: #{output}"})
 		return output
 	end
 
 	# Creates the master list of VMs and their current status.
 	# @return [Nil] Nothing
 	def UpdateVmList()
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: UpdateVmList"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: UpdateVmList"})
 		if defined? @vmListHash
 			@vmListHash = nil
 		end
@@ -253,14 +253,14 @@ class Vmware
         end
 			end
     end
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: UpdateVmList"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: UpdateVmList"})
   end
 
   # Updates/Creates the vmListHash's single VM Information.
   # @param [String] vmname
   # @param [String] vmId -- Not required if just updating VM
   def UpdateVmInfo(vmname, vmId = nil)
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: UpdateVmInfo"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: UpdateVmInfo"})
     vmDetails = Hash.new
     vmGuestDetails = Hash.new
 
@@ -284,7 +284,7 @@ class Vmware
     else # add this VM into the list.
       @vmListHash[vmname] = vmDetails
     end
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: UpdateVmInfo:  #{vmDetails}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: UpdateVmInfo:  #{vmDetails}"})
     vmDetails = nil
     vmGuestDetails = nil
   end
@@ -293,9 +293,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if autostart
   def IsAutoStart?(vmname)
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsAutoStart?(#{vmname})"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: IsAutoStart?(#{vmname})"})
 		autoStart = self.GetIniValue('autoStart')
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsAutoStart?(#{vmname}): #{autoStart.include?(vmname)}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: IsAutoStart?(#{vmname}): #{autoStart.include?(vmname)}"})
 		return autoStart.include?(vmname)
 	end
 
@@ -303,9 +303,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if Stand Alone
 	def IsStandAlone?(vmname)
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsStandAlone?(#{vmname})"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: IsStandAlone?(#{vmname})"})
 		standAlone = self.GetIniValue('standAlone')
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsStandAlone?(#{vmname}): standAlone.include?(vmname)"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: IsStandAlone?(#{vmname}): standAlone.include?(vmname)"})
 		return standAlone.include?(vmname)
   end
 
@@ -313,9 +313,9 @@ class Vmware
   # @param [String] vmname
   # @return [Boolean] True if cannot be suspended.
   def IsNoSuspend?(vmname)
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: IsNoSuspend?(#{vmname})"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: IsNoSuspend?(#{vmname})"})
     noSuspend = self.GetIniValue('noSuspend')
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: IsNoSuspend?(#{vmname}): noSuspend.include?(vmname)"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: IsNoSuspend?(#{vmname}): noSuspend.include?(vmname)"})
     return noSuspend.include?(vmname)
   end
 
@@ -325,7 +325,7 @@ class Vmware
 	def GetVmGuestDetails(vmId)
 		vmHash = Hash.new
 		commandToRun = "vim-cmd vmsvc/get.guest #{vmId}"
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: GetVmGuestDetails(#{vmId}): CommandToRun: #{commandToRun}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: GetVmGuestDetails(#{vmId}): CommandToRun: #{commandToRun}"})
 		output = self.RunSshCommand(commandToRun)
 		vmHash = Hash.new
 		toolsStatusReturned = /toolsStatus = \"(.*)\"/.match(output)
@@ -339,7 +339,7 @@ class Vmware
 				vmHash[:toolsStatusReturned]=false
 			end
     end
-    @notify.VerboseLog({:severity=>'info', :action=>"Finished: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: GetVmGuestDetails(#{vmId}) -  Result: #{vmHash}"})
 		return vmHash
 	end
 
@@ -348,6 +348,7 @@ class Vmware
 	# @param [String] vmName -- Machine name being requested.
 	# @return [Hash] Returns full has of the requested virtual machine.  { :id, :vmname,  :powerstate, :havetools, :ipaddress }
 	def GetVmInfo(vmName)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: GetVmInfo(#{vmName})"})
 		vmHash = Hash.new
 		if vmName == nil
 			vmHash = { :id=>nil, :vmname=>vmName, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
@@ -363,7 +364,7 @@ class Vmware
 		else # Name was not defined, set everything to nil including :vmname
 			vmHash = { :id=>nil, :vmname=>nil, :powerstate=>nil, :autostart=>nil, :standalone => nil, :nosuspend => nil,  :havetools=>nil, :ipaddress=>nil }
     end
-    #TriggerNotification({:severity=>'info', :action=>"Finished: GetVmInfo(#{vmName}) -  Result: #{vmHash}", :verbose=>true}
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: GetVmInfo(#{vmName}) - Return: #{vmHash}"})
 		return vmHash
   end
 
@@ -371,14 +372,14 @@ class Vmware
 	# @param [Int] vmId -- Target ID
 	# @return [Boolean] True/False
 	def IsVmPoweredOn?(vmId)
-    TriggerNotification({:severity=>'info', :action=>"Starting:  IsVmPoweredOn?(#{vmId})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting:  IsVmPoweredOn?(#{vmId})"})
 		result=false
 		commandToRun = "vim-cmd vmsvc/power.getstate #{vmId}"
 		output = self.RunSshCommand(commandToRun)
 		if (output=~/Powered on/)
 			result = true
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished:  IsVmPoweredOn?(#{vmId}) - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished:  IsVmPoweredOn?(#{vmId}) - Result: #{result}"})
 		return result
 	end
 
@@ -386,7 +387,7 @@ class Vmware
   # @param [Array] vmList (by VM name)
   # @return [Boolean] of success or some form of failure.
   def VmGroupPowerOn(vmList)
-    TriggerNotification({:severity=>'info', :action=>"Starting: VmGroupPowerOn(#{vmList})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: VmGroupPowerOn(#{vmList})"})
     result=true
 
     self.TriggerNotification({:severity=>'info', :action=>'Power On (group)', :msg=>vmList})
@@ -396,7 +397,7 @@ class Vmware
     if (output=~/Power on failed/)
       result = false
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: VmGroupPowerOn(#{vmList}) - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: VmGroupPowerOn(#{vmList}) - Result: #{result}"})
     return result
   end
 
@@ -405,10 +406,10 @@ class Vmware
   #     and filtering out Manual starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnStandAloneAutostart
-    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnStandAloneAutostart", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ArrayPoweredOnStandAloneAutostart"})
     vmList = ReturnVmListByStatus(true, true)
     result = FilterOutByAutostart(vmList, true)
-    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnStandAloneAutostart - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ArrayPoweredOnStandAloneAutostart - Result: #{result}"})
     return result
   end
 
@@ -417,10 +418,10 @@ class Vmware
   #     and filtering out Auto starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnStandAloneManualStart
-    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnStandAloneManualStart", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ArrayPoweredOnStandAloneManualStart"})
     vmList = ReturnVmListByStatus(true, true)
     result = FilterOutByAutostart(vmList, false)
-    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnStandAloneManualStart - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ArrayPoweredOnStandAloneManualStart - Result: #{result}"})
     return result
   end
 
@@ -429,10 +430,10 @@ class Vmware
   #     and filtering out Auto starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnDependentManualStart
-    TriggerNotification({:severity=>'info', :action=>"Starting: ArrayPoweredOnDependentManualStart", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ArrayPoweredOnDependentManualStart"})
     vmList = ReturnVmListByStatus(true, false)
     result = FilterOutByAutostart(vmList, false)
-    TriggerNotification({:severity=>'info', :action=>"Finished: ArrayPoweredOnDependentManualStart - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ArrayPoweredOnDependentManualStart - Result: #{result}"})
     return result
   end
 
@@ -442,6 +443,7 @@ class Vmware
   # @param [Boolean] autoStart is what you want to keep in the list.
   # @return [Array] of list of machines that only include the autoStart Yes/No requested.
   def FilterOutByAutostart(vmArray, autoStart)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: FilterOutByAutostart(#{vmArray},#{autoStart})"})
     listToDelete = []
     #build list of machines to delete from the vmArray array.
     vmArray.each do |name|
@@ -456,34 +458,35 @@ class Vmware
       vmArray.delete(name)
     end
 
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: FilterOutByAutostart - Result: #{vmArray}"})
     return vmArray
   end
 
 
   # Suspend/Shutdown all Stand Alone virtual Machines.
   def ShutdownStandAlone
-    TriggerNotification({:severity=>'info', :action=>"Starting: ShutdownStandAlone", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ShutdownStandAlone"})
     if self.ArrayPoweredOnStandAlone.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power Down StandAlones'})
       VmGroupPowerOff(self.ArrayPoweredOnStandAlone)
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: ShutdownStandAlone", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ShutdownStandAlone"})
   end
 
   # Suspend/Shutdown all powered on NAS Dependent.
   def ShutdownNasDependent
-    TriggerNotification({:severity=>'info', :action=>"Starting: ShutdownNasDependent", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ShutdownNasDependent"})
     if self.ArrayPoweredOnDependent.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power Down NASDependents'})
       result = self.VmGroupPowerOff(self.ArrayPoweredOnDependent)
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: ShutdownNasDependent", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ShutdownNasDependent"})
   end
 
 
   # Starts up all the NAS Dependent Autostarting Virtual Machines after making sure NAS is on.
   def StartupAutostartNasDependent
-    TriggerNotification({:severity=>'info', :action=>"Starting: StartupAutostartNasDependent", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: StartupAutostartNasDependent"})
     while !self.isNasActive?
       self.UpdateVmList
 
@@ -503,14 +506,14 @@ class Vmware
       sleep (5)
       self.UpdateVmList
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: StartupAutostartNasDependent", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: StartupAutostartNasDependent"})
   end
 
   # Power off 1 or more virtual machines. -- Suspend is preferred, will shutdown if not allowed to suspend.
   # @param [Array] vmList (by VM name)
   # @return [Boolean] of success or some form of failure.
   def VmGroupPowerOff(vmList)
-    TriggerNotification({:severity=>'info', :action=>"Starting: VmGroupPowerOff(#{vmList})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: VmGroupPowerOff(#{vmList})"})
     result = true
     doNotSuspendList = CheckListForDoNotSuspend(vmList)
     if doNotSuspendList.count == 0  # If All machines can be suspended
@@ -539,22 +542,22 @@ class Vmware
     if (output=~/Power on failed/) or (output=~/Suspend failed/)
       result = false
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: VmGroupPowerOff - Result: #{result}", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: VmGroupPowerOff - Result: #{result}"})
     return result
   end
 
   def ServerShutdown()
-    TriggerNotification({:severity=>'info', :action=>"Starting: ServerShutdown", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ServerShutdown"})
     if @iniHash[:allowHostShutdown]
       result = true
       output = self.RunSshCommand('poweroff')
       if (output=~/Power on failed/) or (output=~/Suspend failed/)
         result = false
       end
-      TriggerNotification({:severity=>'info', :action=>"Finished: ServerShutdown - Result: #{result}", :verbose=>true})
+      @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ServerShutdown - Result: #{result}"})
       return result
     else
-      TriggerNotification({:severity=>'info', :action=>"Finished: ServerShutdown - Result: #{result}", :verbose=>true})
+      @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ServerShutdown - Result: #{result}"})
       return false
     end
   end
@@ -563,14 +566,14 @@ class Vmware
   # @param [Array] vmList (by VM name)
   # @return [Array] of Virtual Machine names that cannot be suspended.
   def CheckListForDoNotSuspend(vmList)
-    TriggerNotification({:severity=>'info', :action=>"Starting: CheckListForDoNotSuspend(#{vmList})", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: CheckListForDoNotSuspend(#{vmList})"})
     doNotSuspendList = []
     vmList.each do |vm|
       if @vmListHash[vm][:nosuspend]
         doNotSuspendList.push(vm)
       end
     end
-    TriggerNotification({:severity=>'info', :action=>"Finished: CheckListForDoNotSuspend - Result: doNotSuspendList", :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: CheckListForDoNotSuspend - Result: #{doNotSuspendList}"})
     return doNotSuspendList
   end
 
@@ -579,27 +582,31 @@ class Vmware
   # @param [String] cmdModeStr of what's passed to the vim-cmd.. such as:  power.suspend
   # @return [String] of what can be sent to the ESXi host.
   def CreateGroupCommandString(vmList, cmdModeStr)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: CreateGroupCommandString(#{vmList},#{cmdModeStr})"})
     commandArray = []
     vmList.each do |vm|
       commandArray.push("vim-cmd vmsvc/#{cmdModeStr} #{@vmListHash[vm][:id]}")
 
     end
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: CreateGroupCommandString - Result: #{commandArray.join(";")}"})
     return commandArray.join(";")
   end
-
-
 
   # Checks to see if the NAS is powered on.
   # @return [Boolean]  True/False depending on if the NAS is powered on.
   def isNasPoweredOn?
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: isNasPoweredOn?"})
     hash = GetVmInfo(self.GetIniValue('nasVmName'))
+    @notify.VerboseLog({:severity=>'debug', :action=>"Fiished: isNasPoweredOn? - Result: #{hash[:powerstate]}"})
     return hash[:powerstate]
   end
 
   # Is the NAS active
   # @return [Boolean] True/False depending on if the NAS is active.  Only 1 NAS allowed.
   def isNasActive?()
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: isNasActive?"})
     hash = GetVmInfo(self.GetIniValue('nasVmName'))
+    @notify.VerboseLog({:severity=>'debug', :action=>"Fiished: isNasActive? - Result: #{hash[:havetools]}"})
     return hash[:havetools]
   end
 
@@ -609,6 +616,7 @@ class Vmware
   # @param [Boolean] standalone -- True if NAS can be off.
   # @return [Array] of Virtual Machine Names.  Nil if none found.
   def ReturnVmListByStatus(powerstate, standalone)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ReturnVmListByStatus(#{powerstate},#{standalone})"})
 		returnArray = []
 		@vmListHash.each do |key, array|
 			if array[:powerstate] == true
@@ -625,6 +633,7 @@ class Vmware
 				returnArray.push(array[:vmname])
 			end
     end
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: ReturnVmListByStatus - Return: #{returnArray}"})
 		return returnArray
   end
 
@@ -632,6 +641,7 @@ class Vmware
   #     by calling ReturnVmListByStatus with correct parameters.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnStandAlone
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: ArrayPoweredOnStandAlone"})
 		return ReturnVmListByStatus(true, true)
   end
 
@@ -639,6 +649,7 @@ class Vmware
   #     by calling ReturnVmListByStatus with correct parameters.
   # @return [Array] of the Virtual Machines matching this criteria
 	def ArrayPoweredOnDependent
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: ArrayPoweredOnDependent"})
 		return ReturnVmListByStatus(true, false)
   end
 
@@ -647,6 +658,7 @@ class Vmware
   #     by calling ReturnVmListByStatus with correct parameters.
   # @return [Array] of the Virtual Machines matching this criteria
 	def ArrayPoweredOffStandAlone
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: ArrayPoweredOffStandAlone"})
 		return ReturnVmListByStatus(false, true)
   end
 
@@ -655,6 +667,7 @@ class Vmware
   #     and filtering out Manual starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOffStandAloneAutostart
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: ArrayPoweredOffStandAloneAutostart"})
     #Get list of machines that are turned off and not standalone.
     vmList = self.ReturnVmListByStatus(false, true)
     returnList = self.FilterOutByAutostart(vmList, true)
@@ -667,6 +680,7 @@ class Vmware
   #     and filtering out Manual starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
 	def ArrayPoweredOffDependentAutostart
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: ArrayPoweredOffDependentAutostart"})
 		#Get list of machines that are turned off and not standalone.
     vmList = ReturnVmListByStatus(false, false)
     return FilterOutByAutostart(vmList, true)
@@ -677,12 +691,16 @@ class Vmware
   # @return [Boolean] True if server could be pinged.
   # @param [String] computerNameOrIp is Name or IP of computer being tested.
   def IsComputerOnline?(computerNameOrIp)
-    Ping.pingecho computerNameOrIp, 1, 80
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: IsComputerOnline?(#{computerNameOrIp})"})
+    result = Ping.pingecho computerNameOrIp, 1, 80
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: IsComputerOnline?(#{computerNameOrIp}) - Return: #{result}"})
+    return result
   end
 
   # Send magic packet to wake a system
   # @param [String] mac -- mac address of system to wake up.
   def WakeOnLan(mac)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: WakeOnLan(#{mac})"})
     # wol.rb: sends out a magic packet to wake up your PC
     #
     # Copyright (c) 2004 zunda <zunda at freeshell.org>
@@ -712,6 +730,7 @@ class Vmware
       so.send( message, 0, host, port )
     end
     # puts "#{txbytes} bytes sent to #{host}:#{port}."
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: WakeOnLan(#{mac})"})
   end
 
 
@@ -725,7 +744,7 @@ class Vmware
  # def BuildVitalHash(powerstate, batterylevel, upsPowerOnAtPercent, upsPowerOffAtPercent)
 #    vitalHash = Hash.new
   def BuildVitalHash()
-    @notify.VerboseLog({:severity=>'info', :action=>"Starting: BuildVitalHash"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: BuildVitalHash"})
     vitalHash = Hash.new
     @ups.UpsMaintenance
     vitalHash[:powerstate] = @ups.GetPowerStatus
@@ -754,7 +773,7 @@ class Vmware
       vitalHash[:NasDependentPoweredOn] = 0
       vitalHash[:StandAlonePoweredOn] = 0
     end
-
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: BuildVitalHash - Return: #{vitalHash}"})
     return vitalHash
   end
 
@@ -762,6 +781,7 @@ class Vmware
   # @param [Hash] vitalHash
   # @return [String] of what the decision was.
   def VmMaintenanceDecisionTime(vitalHash)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: VmMaintenanceDecisionTime(#{vitalHash})"})
     if vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
         and vitalHash[:StandAloneAutoStartPoweredOff] == 0 and vitalHash[:NasDependentAutoStartPoweredOff] == 0
           response = 'All Systems Good' # Everything is fine.
@@ -791,6 +811,7 @@ class Vmware
         response = 'Power Down NASDependents'
       else response = 'Do Nothing'
     end
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: VmMaintenanceDecisionTime - Return: #{response}"})
     return response
   end
 
@@ -800,6 +821,7 @@ class Vmware
   # @param [String] toDo
   # @return [String] returns the param toDo
   def MaintenanceAction(toDo)
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenanceAction(#{toDo})"})
     case toDo
       when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8')
       when 'Power On StandAlone AutoStart'; self.StartupAutostartStandAlone
@@ -811,11 +833,12 @@ class Vmware
       when 'Error - Confirm NAS Off'; TriggerNotification({:severity=>'error', :action=>'Error - Confirm NAS Off'})
       when 'Do Nothing'; TriggerNotification({:severity=>'debug', :action=>'Do Nothing'})
     end
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenanceAction(#{toDo})"})
     return toDo
   end
 
   def Maintenance(args={:test=>false})
-    TriggerNotification({:severity=>'info', :action=>'Starting Maintenace Method', :verbose=>true})
+    @notify.VerboseLog({:severity=>'debug', :action=>'Starting: Maintenace Method'})
     self.UpdateVmList
     responseHash = self.BuildVitalHash
 
@@ -833,29 +856,34 @@ class Vmware
 
     responseHash[:ActionMessage] = VmMaintenanceDecisionTime(responseHash)
     MaintenanceAction(responseHash[:ActionMessage])
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: Maintenace Method - Return #{responseHash}"})
     responseHash
   end
 
   # Returns the last time the UPS was checked
   # @return [String] Timestamp
   def UpsGetLastCheckedTimestamp
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: UpsGetLastCheckedTimestamp - #{@ups.GetLastCheckedTimestamp}"})
     return @ups.GetLastCheckedTimestamp
   end
 
   # Returns the UPS Power Status
   # @return [Boolean]
   def UpsGetPowerStatus
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: UpsGetPowerStatus - #{@ups.GetPowerStatus}"})
     return @ups.GetPowerStatus
   end
 
   # Returns the UPS Battery Status
   # @return [Float] of the battery level
   def UpsGetBatteryStatus
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: UpsGetBatteryStatus - #{@ups.GetBatteryStatus}"})
     return @ups.GetBatteryStatus
   end
 
   # Runs the UpsMaintenance.
   def UpsMaintenance
+    @notify.VerboseLog({:severity=>'debug', :action=>"Returning: UpsMaintenance - #{@ups.UpsMaintenance}"})
     return @ups.UpsMaintenance
   end
 
@@ -900,19 +928,26 @@ class Vmware
   #     and filtering out Manual starting machines via FilterOutByAutostart.
   # @return [Array] of the Virtual Machines matching this criteria
   def ArrayPoweredOnDependentAutoStart
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: ArrayPoweredOnDependentAutoStart"})
     vmList = ReturnVmListByStatus(true, false)
-    return FilterOutByAutostart(vmList, true)
+    result = FilterOutByAutostart(vmList, true)
+    @notify.VerboseLog({:severity=>'debug', :action=>"finished: ArrayPoweredOnDependentAutoStart - Return: #{result}"})
+    return result
   end
 
 
   # Starts up Stand Alone Autostarting Virtual Machines.
   def StartupAutostartStandAlone
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: StartupAutostartStandAlone"})
     if self.ArrayPoweredOffStandAloneAutostart.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power On StandAlone AutoStart'})
       self.VmGroupPowerOn(self.ArrayPoweredOffStandAloneAutostart)
+      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Sleeping for 30 seconds for NAS to spin up"})
       sleep (30)
+      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Finished Sleeping"})
       self.UpdateVmList
     end
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: StartupAutostartStandAlone"})
   end
 
 
