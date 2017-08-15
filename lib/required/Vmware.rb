@@ -142,6 +142,8 @@ class Vmware
     iniHash[:UpsInputName] = iniHash.fetch(:UpsInputName, './upstest.txt')
     iniHash[:writeLogs] = args.fetch(:writeLogs, @ini.GetValue('writeLogs'))
     iniHash[:writeLogs] = iniHash.fetch(:writeLogs, true)
+    iniHash[:verboseLogging] = args.fetch(:verboseLogging, @ini.GetValue('verboseLogging'))
+    iniHash[:verboseLogging] = iniHash.fetch(:verboseLogging, false)
     iniHash[:hdDir] = args.fetch(:hdDir, @ini.GetValue('hdDir'))
     iniHash[:hdDir] = iniHash.fetch(:hdDir, '/hd')
     iniHash[:ramDiskDir] = args.fetch(:ramDiskDir, @ini.GetValue('ramDiskDir'))
@@ -181,6 +183,7 @@ class Vmware
     tempHash[:pushoverUserToken] = self.GetIniValue('pushoverUserToken')
     tempHash[:pushoverAppToken] = self.GetIniValue('pushoverAppToken')
     tempHash[:secondsBetweenLoggingAllSystemsGood] = self.GetIniValue('secondsBetweenLoggingAllSystemsGood')
+    tempHash[:verboseLogging] = self.GetIniValue('verboseLogging')
     tempHash[:initialActionMsg] = 'Software Starts'
     tempHash
   end

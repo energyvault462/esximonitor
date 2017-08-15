@@ -202,10 +202,6 @@ class Notification
     returnValue
   end
 
-  def SendEmail(message, vitalHash)
-    nil
-  end
-
   def SendPush(vitalHash)
     queueCount = 0
     until @queue.empty?
