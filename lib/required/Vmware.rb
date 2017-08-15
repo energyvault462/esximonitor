@@ -208,6 +208,7 @@ class Vmware
 		output = ""
 		#start_time = Time.now
 		#puts "running: #{command}"
+    TriggerNotification({:severity=>'info', :action=>"SSH Command: #{command}", :verbose=>true})
     Net::SSH.start( @host, @user) do|ssh|
 			output = ssh.exec!(command)
     end
@@ -222,6 +223,7 @@ class Vmware
 	# Creates the master list of VMs and their current status.
 	# @return [Nil] Nothing
 	def UpdateVmList()
+    TriggerNotification({:severity=>'info', :action=>"Updating VM List", :verbose=>true})
 		if defined? @vmListHash
 			@vmListHash = nil
 		end
@@ -254,6 +256,7 @@ class Vmware
   # @param [String] vmname
   # @param [String] vmId -- Not required if just updating VM
   def UpdateVmInfo(vmname, vmId = nil)
+    TriggerNotification({:severity=>'info', :action=>"Upadting VM Info", :verbose=>true})
     vmDetails = Hash.new
     vmGuestDetails = Hash.new
 
