@@ -231,27 +231,26 @@ class Vmware
 		@vmListHash = Hash.new
 
     TriggerNotification({:severity=>'info', :action=>"Starting: UpdateVmList", :verbose=>true})
-
-		output = self.RunSshCommand('vim-cmd vmsvc/getallvms')
-
-		match1 = output.split("\n")
-
-		match1.each_with_index do |item, index|
-			if index == 0
-				#Do Nothing on the first row, it's the header row.
-      else
-				match2 = /(\d*)(\s*)(\S*)([ ]*)(\[\S*\] \S*)([ ]*)(\S*)([ ]*)(\S*)/.match(match1[index])
-				# match2 example line: 8      VMMinecraft   [DatastoreSSD1] VMMinecraft/VMMinecraft.vmx   ubuntu64Guest       vmx-08
-				vmId = match2[1].strip.to_i
-				vmname = match2[3].strip
-        if @limitVmHosts
-          if  @testVms.include?(vmname)
+    if IsComputerOnline?(@iniHash[:serverIp])
+      output = self.RunSshCommand('vim-cmd vmsvc/getallvms')
+      match1 = output.split("\n")
+      match1.each_with_index do |item, index|
+        if index == 0
+          #Do Nothing on the first row, it's the header row.
+        else
+          match2 = /(\d*)(\s*)(\S*)([ ]*)(\[\S*\] \S*)([ ]*)(\S*)([ ]*)(\S*)/.match(match1[index])
+          # match2 example line: 8      VMMinecraft   [DatastoreSSD1] VMMinecraft/VMMinecraft.vmx   ubuntu64Guest       vmx-08
+          vmId = match2[1].strip.to_i
+          vmname = match2[3].strip
+          if @limitVmHosts
+            if  @testVms.include?(vmname)
+              UpdateVmInfo(vmname, vmId)
+            end
+          else
             UpdateVmInfo(vmname, vmId)
           end
-        else
-          UpdateVmInfo(vmname, vmId)
         end
-			end
+      end
     end
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: UpdateVmList"})
   end
@@ -782,34 +781,37 @@ class Vmware
   # @return [String] of what the decision was.
   def VmMaintenanceDecisionTime(vitalHash)
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: VmMaintenanceDecisionTime(#{vitalHash})"})
-    if vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
+    if vitalHash[:serverOnline] == true and vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
         and vitalHash[:StandAloneAutoStartPoweredOff] == 0 and vitalHash[:NasDependentAutoStartPoweredOff] == 0
           response = 'All Systems Good' # Everything is fine.
-      elsif vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
         and vitalHash[:StandAloneAutoStartPoweredOff] == 0 and vitalHash[:NasDependentAutoStartPoweredOff] > 0
           response = 'Power On NASDependent AutoStart'
-      elsif vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent] \
         and vitalHash[:StandAloneAutoStartPoweredOff] > 0
         response = 'Power On StandAlone AutoStart'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] == 0 and vitalHash[:NasDependentPoweredOn] == 0
         response = 'Shutdown Server'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] == 0 and vitalHash[:NasDependentPoweredOn] > 0
         response = 'Error - Confirm NAS Off'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] > 0 and vitalHash[:NasDependentPoweredOn] == 0
         response = 'Power Down StandAlones'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] <= vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] > 0 and vitalHash[:NasDependentPoweredOn] > 0
         response = 'Power Down NASDependents'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] > vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] > vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] == 0 and vitalHash[:NasDependentPoweredOn] > 0
         response = 'Error - Confirm NAS Off'
-      elsif vitalHash[:powerstate] == false and vitalHash[:batterylevel] > vitalHash[:upsPowerOffAtPercent] \
+      elsif vitalHash[:serverOnline] == true and vitalHash[:powerstate] == false and vitalHash[:batterylevel] > vitalHash[:upsPowerOffAtPercent] \
         and vitalHash[:StandAlonePoweredOn] > 0 and vitalHash[:NasDependentPoweredOn] > 0
         response = 'Power Down NASDependents'
+      elsif vitalHash[:serverOnline] == false and vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent]
+        response = 'Power On Esxi Server'
       else response = 'Do Nothing'
+
     end
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: VmMaintenanceDecisionTime - Return: #{response}"})
     return response
