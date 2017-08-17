@@ -809,7 +809,7 @@ class Vmware
         and vitalHash[:StandAlonePoweredOn] > 0 and vitalHash[:NasDependentPoweredOn] > 0
         response = 'Power Down NASDependents'
       elsif vitalHash[:serverOnline] == false and vitalHash[:powerstate] == true and vitalHash[:batterylevel] >= vitalHash[:upsPowerOnAtPercent]
-        response = 'Power On Esxi Server'
+        response = 'Power Up Server'
       else response = 'Do Nothing'
 
     end
