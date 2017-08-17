@@ -710,26 +710,24 @@ class Vmware
     #
 
     # target machine
-    #mac = 'XX:XX:XX:XX:XX:XX'	# hex numbers
-
-    require 'socket'
+    #mac = 'F4:6D:04:E1:D8:A0'       # hex numbers
 
     # target network
-    subhost = /(\d*.\d*.\d*)/.match(self.GetIniValue('serverIp'))
-    host = subhost[1] << ".0"
-
+    host = '192.168.13.255'
     local = true
+    #       host = 'example.com'
+    #       local = false
 
-    port = 9	# Discard Protocol
-    message = "\xFF"*6 + [ mac.gsub( /:/, '' ) ].pack( 'H12' )*16
+    require 'socket'
+    port = 9        # Discard Protocol
+    message = "\xFF".force_encoding(Encoding::ASCII_8BIT)*6 + [ mac.gsub( /:/, '' ) ].pack( 'H12' )*16
     txbytes = UDPSocket.open do |so|
-      if local then
-        so.setsockopt( Socket::SOL_SOCKET, Socket::SO_BROADCAST, true )
-      end
-      so.send( message, 0, host, port )
+            if local then
+                    so.setsockopt( Socket::SOL_SOCKET, Socket::SO_BROADCAST, true )
+            end
+            so.send( message, 0, host, port )
     end
-    # puts "#{txbytes} bytes sent to #{host}:#{port}."
-    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: WakeOnLan(#{mac})"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: WakeOnLan(#{txbytes} bytes sent to #{host}:#{port}.)"})
   end
 
 
@@ -825,7 +823,7 @@ class Vmware
   def MaintenanceAction(toDo)
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenanceAction(#{toDo})"})
     case toDo
-      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8')
+      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8'); sleep(300)
       when 'Power On StandAlone AutoStart'; self.StartupAutostartStandAlone
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
