@@ -78,7 +78,7 @@ class Vmware
 
     @notify = Notification.new(CreateNotificationInitHash(self.GetIniValue('writeLogs')))
 
-    self.UpdateVmList
+    #self.UpdateVmList
 
     PostInitialize(args)  # here so any children classes can have a PostInitialize class to do stuff too.
 
@@ -488,23 +488,23 @@ class Vmware
   def StartupAutostartNasDependent
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: StartupAutostartNasDependent"})
     while !self.isNasActive?
-      self.UpdateVmList
+      #self.UpdateVmList
 
       if !self.isNasPoweredOn?
         TriggerNotification({:severity=>'debug', :action=>'Power On StandAlone AutoStart from StartupAutostartNasDependent'})
         self.VmGroupPowerOn(self.ArrayPoweredOffStandAloneAutostart)
-        self.UpdateVmList
+        #self.UpdateVmList
       elsif !isNasActive? and self.isNasPoweredOn?
         puts "isNasActive?: #{isNasActive?}"
         sleep (5)
-        self.UpdateVmList
+        #self.UpdateVmList
       end
     end
     if self.ArrayPoweredOffDependentAutostart.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power On NASDependent AutoStart'})
       self.VmGroupPowerOn(self.ArrayPoweredOffDependentAutostart)
       sleep (5)
-      self.UpdateVmList
+      #self.UpdateVmList
     end
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: StartupAutostartNasDependent"})
   end
@@ -969,7 +969,7 @@ class VmwareUtil < Vmware
   def ShutdownAll
     self.ShutdownNasDependent
     self.ShutdownStandAlone
-    self.UpdateVmList
+    #self.UpdateVmList
   end
 
   # Startup all Autostartup Virtual Machines, starting with stand alone machines, then NAS dependent.
