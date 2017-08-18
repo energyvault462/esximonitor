@@ -597,7 +597,7 @@ class Vmware
   def isNasPoweredOn?
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: isNasPoweredOn?"})
     hash = GetVmInfo(self.GetIniValue('nasVmName'))
-    @notify.VerboseLog({:severity=>'debug', :action=>"Fiished: isNasPoweredOn? - Result: #{hash[:powerstate]}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: isNasPoweredOn? - Result: #{hash[:powerstate]}"})
     return hash[:powerstate]
   end
 
@@ -606,7 +606,7 @@ class Vmware
   def isNasActive?()
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: isNasActive?"})
     hash = GetVmInfo(self.GetIniValue('nasVmName'))
-    @notify.VerboseLog({:severity=>'debug', :action=>"Fiished: isNasActive? - Result: #{hash[:havetools]}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: isNasActive? - Result: #{hash[:havetools]}"})
     return hash[:havetools]
   end
 
@@ -800,7 +800,7 @@ class Vmware
   def MaintenanceAction(toDo)
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenanceAction(#{toDo})"})
     case toDo
-      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8'); sleep(300)
+      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8');@notify.VerboseLog({:severity=>'debug', :action=>'Waiting 4 minutes for server to power on....'}) ; sleep(240)
       when 'Power On StandAlone AutoStart'; self.StartupAutostartStandAlone
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
@@ -810,8 +810,7 @@ class Vmware
       when 'Error - Confirm NAS Off'; TriggerNotification({:severity=>'error', :action=>'Error - Confirm NAS Off'})
       when 'Do Nothing'; TriggerNotification({:severity=>'debug', :action=>'Do Nothing'})
     end
-    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenanceAction(#{toDo})"})
-    return toDo
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenanceAction()"})
   end
 
   def MaintenancePause(pausefor)
