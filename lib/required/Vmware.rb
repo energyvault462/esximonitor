@@ -798,10 +798,17 @@ class Vmware
   # @param [String] toDo
   # @return [String] returns the param toDo
   def MaintenanceAction(toDo)
+    resultHash = {:pauseTime=>90, :pauseMsg=>'until next maintenace cycle'}
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenanceAction(#{toDo})"})
     case toDo
-      when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8');@notify.VerboseLog({:severity=>'debug', :action=>'Waiting 4 minutes for server to power on....'}) ; sleep(240)
-      when 'Power On StandAlone AutoStart'; self.StartupAutostarts; @notify.VerboseLog({:severity=>'debug', :action=>'Waiting 2 minutes for standalones to power up....'}) ; sleep(120)
+      when 'Power Up Server'
+        TriggerNotification({:severity=>'info', :action=>'Power Up Server'})
+        self.WakeOnLan('F4:6D:04:E1:D8:A0')
+        self.WakeOnLan('F4:6D:04:E1:D9:C8')
+        resultHash = {:pauseTime=>240, :pauseMsg=>'while server comes online.'}
+      when 'Power On StandAlone AutoStart'
+        self.StartupAutostartStandAlone
+        resultHash = {:pauseTime=>120, :pauseMsg=>'while Autostarts (NAS) comes online.'}
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
       when 'Power Down NASDependents'; self.ShutdownNasDependent
@@ -811,12 +818,13 @@ class Vmware
       when 'Do Nothing'; TriggerNotification({:severity=>'debug', :action=>'Do Nothing'})
     end
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenanceAction()"})
+    return resultHash
   end
 
   def MaintenancePause(pausefor)
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenancePause"})
-    @notify.VerboseLog({:severity=>'debug', :action=>"          Pausing for #{pausefor} seconds until next maint cycle"})
-    sleep(pausefor)
+    @notify.VerboseLog({:severity=>'debug', :action=>"          Pausing for #{pausefor[:pauseTime]} seconds #{pausefor[:pauseMsg]}"})
+    sleep(pausefor[:pauseTime])
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: MaintenancePause"})
   end
 
@@ -839,7 +847,9 @@ class Vmware
     end
 
     responseHash[:ActionMessage] = VmMaintenanceDecisionTime(responseHash)
-    MaintenanceAction(responseHash[:ActionMessage])
+    pauseHash = MaintenanceAction(responseHash[:ActionMessage])
+    responseHash[:pauseTime] = pauseHash[:pauseTime]
+    responseHash[:pauseMsg] = pauseHash[:pauseMsg]
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: Maintenance Method - Return #{responseHash}"})
     responseHash
   end
@@ -1085,10 +1095,6 @@ class VmwareUtil < Vmware
   def ReturnVmHashs
     return @vmListHash
   end
-
-
-
-
 
   # Get list of machines that are powered off, standalone and Manual Start
   #     by calling ReturnVmListByStatus with correct parameters.
