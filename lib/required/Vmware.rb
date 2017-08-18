@@ -840,7 +840,7 @@ class Vmware
 
     responseHash[:ActionMessage] = VmMaintenanceDecisionTime(responseHash)
     MaintenanceAction(responseHash[:ActionMessage])
-    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: Maintenace Method - Return #{responseHash}"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: Maintenance Method - Return #{responseHash}"})
     responseHash
   end
 
