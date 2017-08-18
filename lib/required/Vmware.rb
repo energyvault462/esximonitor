@@ -1,6 +1,7 @@
 #TODO:  	Test with server off (probably will crash); maintencestop file
 require 'net/ssh'
 require 'time'
+require 'wake_on_lan'
 
 # Require EsxiIni
 begin
@@ -700,34 +701,10 @@ class Vmware
   # @param [String] mac -- mac address of system to wake up.
   def WakeOnLan(mac)
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: WakeOnLan(#{mac})"})
-    # wol.rb: sends out a magic packet to wake up your PC
-    #
-    # Copyright (c) 2004 zunda <zunda at freeshell.org>
-    #
-    # This program is free software. You can re-distribute and/or
-    # modify this program under the same terms of ruby itself ---
-    # Ruby Distribution License or GNU General Public License.
-    #
 
-    # target machine
-    #mac = 'F4:6D:04:E1:D8:A0'       # hex numbers
+    WakeOnLan.wake mac, @iniHash[:serverIp], 9
 
-    # target network
-    host = '192.168.13.255'
-    local = true
-    #       host = 'example.com'
-    #       local = false
-
-    require 'socket'
-    port = 9        # Discard Protocol
-    message = "\xFF".force_encoding(Encoding::ASCII_8BIT)*6 + [ mac.gsub( /:/, '' ) ].pack( 'H12' )*16
-    txbytes = UDPSocket.open do |so|
-            if local then
-                    so.setsockopt( Socket::SOL_SOCKET, Socket::SO_BROADCAST, true )
-            end
-            so.send( message, 0, host, port )
-    end
-    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: WakeOnLan(#{txbytes} bytes sent to #{host}:#{port}.)"})
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: WakeOnLan()"})
   end
 
 
