@@ -805,7 +805,7 @@ class Vmware
         TriggerNotification({:severity=>'info', :action=>'Power Up Server'})
         self.WakeOnLan('F4:6D:04:E1:D8:A0')
         self.WakeOnLan('F4:6D:04:E1:D9:C8')
-        resultHash = {:pauseTime=>240, :pauseMsg=>'while server comes online.'}
+        resultHash = {:pauseTime=>300, :pauseMsg=>'while server comes online.'}
       when 'Power On StandAlone AutoStart'
         self.StartupAutostartStandAlone
         resultHash = {:pauseTime=>120, :pauseMsg=>'while StandAlone Autostarts comes online.'}
