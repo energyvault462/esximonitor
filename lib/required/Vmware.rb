@@ -808,7 +808,7 @@ class Vmware
         resultHash = {:pauseTime=>240, :pauseMsg=>'while server comes online.'}
       when 'Power On StandAlone AutoStart'
         self.StartupAutostartStandAlone
-        resultHash = {:pauseTime=>120, :pauseMsg=>'while Autostarts (NAS) comes online.'}
+        resultHash = {:pauseTime=>120, :pauseMsg=>'while StandAlone Autostarts comes online.'}
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
       when 'Power Down NASDependents'; self.ShutdownNasDependent
