@@ -801,7 +801,7 @@ class Vmware
     @notify.VerboseLog({:severity=>'debug', :action=>"Starting: MaintenanceAction(#{toDo})"})
     case toDo
       when 'Power Up Server'; TriggerNotification({:severity=>'info', :action=>'Power Up Server'}); self.WakeOnLan('F4:6D:04:E1:D8:A0'); self.WakeOnLan('F4:6D:04:E1:D9:C8');@notify.VerboseLog({:severity=>'debug', :action=>'Waiting 4 minutes for server to power on....'}) ; sleep(240)
-      when 'Power On StandAlone AutoStart'; self.StartupAutostartStandAlone
+      when 'Power On StandAlone AutoStart'; self.StartupAutostarts; @notify.VerboseLog({:severity=>'debug', :action=>'Waiting 2 minutes for standalones to power up....'}) ; sleep(120)
       when 'Power On NASDependent AutoStart'; self.StartupAutostartNasDependent
       when 'All Systems Good'; TriggerNotification({:severity=>'info', :action=>'All Systems Good'})
       when 'Power Down NASDependents'; self.ShutdownNasDependent
@@ -926,10 +926,6 @@ class Vmware
     if self.ArrayPoweredOffStandAloneAutostart.length > 0
       TriggerNotification({:severity=>'info', :action=>'Power On StandAlone AutoStart'})
       self.VmGroupPowerOn(self.ArrayPoweredOffStandAloneAutostart)
-      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Sleeping for 120 seconds for NAS to spin up"})
-      sleep (120)
-      @notify.VerboseLog({:severity=>'debug', :action=>"          StartupAutostartStandAlone Finished Sleeping"})
-      self.UpdateVmList
     end
     @notify.VerboseLog({:severity=>'debug', :action=>"Finished: StartupAutostartStandAlone"})
   end
@@ -976,10 +972,12 @@ class VmwareUtil < Vmware
     self.UpdateVmList
   end
 
-  # Startup all Autostartup Virtual Machines, startin with stand alone machines, then NAS dependent.
+  # Startup all Autostartup Virtual Machines, starting with stand alone machines, then NAS dependent.
   def StartupAutostarts
+    @notify.VerboseLog({:severity=>'debug', :action=>"Starting: StartupAutostarts"})
     self.StartupAutostartStandAlone
     self.StartupAutostartNasDependent
+    @notify.VerboseLog({:severity=>'debug', :action=>"Finished: StartupAutostarts"})
   end
 
   # Suspend the requested VM.
